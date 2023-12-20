@@ -7,7 +7,7 @@ User = get_user_model()
 class Ingredient(models.Model):
     INGREDIENT_CHOICES = [
         # возможно нужно поменять местами англ и рус
-        ('salt', 'Соль'),
+        ('Salt', 'Соль'),
         ('pepper', 'Перец'),
         ('sugar', 'Сахар'),
         ('flour', 'Мука'),
@@ -22,6 +22,20 @@ class Ingredient(models.Model):
         max_length=256,
         choices=INGREDIENT_CHOICES,
         verbose_name='Ингредиент'
+    )
+    UNIT_CHOICES = [
+        ('g', 'грамм'),
+        ('ml', 'миллилитр'),
+        ('pcs', 'штука'),
+        ('tbsp', 'столовая ложка'),
+        ('to taste', 'по вкусу'),
+        ('pinch', 'щепотка'),
+    ]
+    measurement_unit = models.CharField(
+        max_length=50,
+        choices=UNIT_CHOICES,
+        verbose_name='Единица измерения',
+        default='g'
     )
 
 
@@ -55,7 +69,8 @@ class Recipe(models.Model):
         upload_to='recipes/images/',
         null=True,
         default=None,
-        verbose_name='Картинка'
+        verbose_name='Картинка',
+        blank=True
     )
     description = models.TextField(
         null=True,
@@ -92,19 +107,6 @@ class RecipeIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента'
-    )
-    UNIT_CHOICES = [
-        ('g', 'грамм'),
-        ('ml', 'миллилитр'),
-        ('pcs', 'штука'),
-        ('tbsp', 'столовая ложка'),
-        ('to taste', 'по вкусу'),
-        ('pinch', 'щепотка'),
-    ]
-    unit_of_measurement = models.CharField(
-        max_length=50,
-        choices=UNIT_CHOICES,
-        verbose_name='Единица измерения'
     )
 
 

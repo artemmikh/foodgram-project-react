@@ -1,3 +1,26 @@
-from django.shortcuts import render
+from rest_framework import viewsets
 
-# Create your views here.
+
+from api.serializers import (
+    TagSerializer,
+    IngredientSerializer
+)
+from food.models import (
+    Tag,
+    Ingredient,
+)
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    """ViewSet для сериализатора CategorySerializer."""
+
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    pagination_class = None
+
+
+class IngredientViewSet(viewsets.ModelViewSet):
+    """ViewSet для сериализатора CategorySerializer."""
+
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
