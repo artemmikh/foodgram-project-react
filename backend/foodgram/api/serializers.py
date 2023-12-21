@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from djoser.serializers import UserCreateSerializer, UserSerializer
 
 from food.models import (
     Recipe,
@@ -87,3 +88,19 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ()
+
+
+class RegisterSerializer(UserCreateSerializer):
+    class Meta(UserCreateSerializer.Meta):
+        fields = (
+            'email',
+            "id",
+            'username',
+            'first_name',
+            'last_name',
+        )
+
+
+class CustomUserSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        fields = ('id', 'email', 'username', 'first_name', 'last_name')
