@@ -9,6 +9,7 @@ from food.models import (
     Favorite,
     Follow,
 )
+from food.models import Follow
 
 
 # Обработка картинок в сериализаторе
@@ -90,11 +91,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ()
 
 
-class RegisterSerializer(UserCreateSerializer):
+class CustomRegisterSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         fields = (
             'email',
-            "id",
+            'id',
             'username',
             'first_name',
             'last_name',
@@ -102,5 +103,19 @@ class RegisterSerializer(UserCreateSerializer):
 
 
 class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
     class Meta(UserSerializer.Meta):
-        fields = ('id', 'email', 'username', 'first_name', 'last_name')
+        fields = ('id',
+                  'email',
+                  'username',
+                  'first_name',
+                  'last_name',
+                  'is_subscribed',
+                  )
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return Follow.objects.filter(user=request.user, author=obj).exists()
+        return False
