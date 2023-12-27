@@ -7,7 +7,6 @@ from api.views import (
     TagViewSet,
     IngredientViewSet,
     CustomUserViewSet,
-    CustomUserViewSetMe,
 )
 
 router_v1 = DefaultRouter()
@@ -16,10 +15,7 @@ router_v1.register('ingredients', IngredientViewSet)
 router_v1.register(r'users', DjoserUserViewSet, basename='user')
 
 urlpatterns = [
-    # path('users/', CustomUserViewSet.as_view({'get': 'list'}), name='user-list'),
-    # path('users/<int:id>/', CustomUserViewSetMe.as_view({'get': 'retrieve'}), name='user-detail'),
-    path('api/users/me/', CustomUserViewSetMe.as_view({'get': 'retrieve', 'patch': 'partial_update'}),
-         name='user-me'),
+    path('users/', CustomUserViewSet.as_view({'get': 'list_users'}), name='user-list'),
     path('', include(router_v1.urls)),
     path('', include('djoser.urls')),
     path('token/login/', views.obtain_auth_token),
