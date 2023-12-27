@@ -3,6 +3,7 @@ from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
+from djoser import views as djoser_views
 
 from api.serializers import (
     TagSerializer,
@@ -17,19 +18,27 @@ from food.models import (
 
 
 class CustomUserViewSet(DjoserUserViewSet):
-    """Кстомный ViewSet для сериализатора CategorySerializer."""
     permission_classes = (permissions.AllowAny,)
-
-    @action(detail=True, methods=['get'])
-    def profile(self, request, *args, **kwargs):
-        user = self.get_object()
-        serializer = self.get_serializer(user)
-        return Response(serializer.data)
-
-
-class CustomUserViewMe(DjoserUserViewSet):
     serializer_class = CustomUserSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    queryset = User.objects.all()
+
+
+# class CustomUserViewSetMe(djoser_views.UserViewSet):
+#     serializer_class = CustomUserSerializer
+#
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.filter_queryset(self.get_queryset())
+#         serializer = self.get_serializer(queryset, many=True)
+#         return Response(serializer.data[0] if serializer.data else None)
+
+class CustomUserViewSetMe(DjoserUserViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CustomUserSerializer
+
+    @action(detail=False, methods=['get'])
+    def me(self, request, *args, **kwargs):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(viewsets.ModelViewSet):
