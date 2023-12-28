@@ -1,3 +1,17 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
-# Register your models here.
+from .models import MyUser
+
+
+class UserAdmin(admin.ModelAdmin):
+    """
+    Административная панель для управления объектами модели User.
+    """
+
+    UserAdmin.fieldsets += (
+        ('Extra Fields', {'fields': ('is_admin',)}),
+    )
+
+
+admin.site.register(MyUser, UserAdmin)
