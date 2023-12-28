@@ -4,10 +4,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework import status
+from rest_framework import filters
+from django_filters import rest_framework
+from rest_framework.filters import SearchFilter
 from rest_framework.exceptions import PermissionDenied
-
-from rest_framework import generics
-from rest_framework.pagination import PageNumberPagination
 
 from api.serializers import (
     TagSerializer,
@@ -22,6 +22,17 @@ from food.models import (
 from api.permissions import (
     IsAdminOrReadOnly,
 )
+from api.filters import IngredientFilter
+
+
+class CustomModelViewSet(viewsets.ModelViewSet):
+    """Возвращается код 405 при отсутствии доступа"""
+
+    def handle_exception(self, exc):
+        if isinstance(exc, PermissionDenied):
+            return Response({"detail": "У вас нет прав для выполнения этого действия."},
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().handle_exception(exc)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -35,7 +46,7 @@ class CustomUserViewSet(UserViewSet):
 
 
 # TODO "Структура ответа должна соответствовать ожидаемой"
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(CustomModelViewSet):
     """ViewSet для сериализатора CategorySerializer."""
 
     queryset = Tag.objects.all()
@@ -43,16 +54,14 @@ class TagViewSet(viewsets.ModelViewSet):
     pagination_class = None
     permission_classes = (IsAdminOrReadOnly,)
 
-    # нужен чтобы возвращался код 405 при отсутствии доступа
-    def handle_exception(self, exc):
-        if isinstance(exc, PermissionDenied):
-            return Response({"detail": "У вас нет прав для выполнения этого действия."},
-                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().handle_exception(exc)
 
-
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(CustomModelViewSet):
     """ViewSet для сериализатора CategorySerializer."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    pagination_class = None
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter]
+    filterset_class = IngredientFilter
+    search_fields = ["name"]
