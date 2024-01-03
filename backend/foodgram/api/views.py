@@ -1,32 +1,42 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework import status
-from rest_framework import filters
 from django_filters import rest_framework
 from rest_framework.filters import SearchFilter
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    IsAuthenticated,
+    AllowAny,
+    DjangoModelPermissions,
+)
 
 from api.serializers import (
     TagSerializer,
     IngredientSerializer,
-    CustomUserSerializer
+    CustomUserSerializer,
+    RecipeSerializer,
+    FavoriteSerializer,
 )
 from food.models import (
     Tag,
     Ingredient,
-    User
+    Recipe,
+    Favorite,
 )
 from api.permissions import (
     IsAdminOrReadOnly,
 )
 from api.filters import IngredientFilter
+from api.mixins import CreateListUpdateDestroy
 
 
 class CustomModelViewSet(viewsets.ModelViewSet):
-    """Возвращается код 405 при отсутствии доступа"""
+    """Возвращается код 405 при отсутствии прав."""
 
     def handle_exception(self, exc):
         if isinstance(exc, PermissionDenied):
@@ -65,3 +75,28 @@ class IngredientViewSet(CustomModelViewSet):
     filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter]
     filterset_class = IngredientFilter
     search_fields = ["name"]
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+
+class FavoriteViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_recipe(self):
+        return get_object_or_404(Recipe, pk=self.kwargs.get('recipe_id'))
+
+    # def get_queryset(self):
+    #     return Favorite.objects.filter(recipe=self.get_recipe(), user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, recipe=self.get_recipe())
+
+    def delete(self, request, *args, **kwargs):
+        instance = get_object_or_404(Favorite, recipe=self.get_recipe(), user=request.user)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

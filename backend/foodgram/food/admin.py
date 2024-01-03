@@ -16,8 +16,7 @@ class RecipeAdmin(admin.ModelAdmin):
     Административная панель для управления объектами модели Recipe.
     """
 
-    list_display = ('pk', 'name', 'image', 'description',
-                    'author', 'pub_date')
+    list_display = ('pk', 'name', 'image', 'author',)
     search_fields = ('name',)
     empty_value_display = '-пусто-'
 

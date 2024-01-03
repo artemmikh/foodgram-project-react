@@ -1,4 +1,5 @@
 from django.urls import reverse
+from rest_framework import status
 from rest_framework.test import APITransactionTestCase
 from rest_framework.authtoken.models import Token
 
@@ -31,3 +32,36 @@ class RecipesApiTestCase(APITransactionTestCase):
             amount=32,
             recipe=self.recipe
         )
+
+    def test_list(self):
+        resp = self.client.get(self.url)
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        obj = resp.data[0]
+        self.assertEqual(obj['name'], self.recipe.name)
+        ing = obj['ingredients'][0]
+        self.assertEqual(ing.get('id'), self.salt.id)
+        self.assertEqual(ing.get('amount'), self.recipe_ing.amount)
+        self.assertEqual(ing.get('name'), self.salt.name)
+
+    def test_create_recipe(self):
+        data = dict(
+            name='Pie',
+            text='Create pie',
+            ingredients=[{'id': self.salt.id, 'amount': '22'}, ],
+            cooking_time=30
+        )
+
+        resp = self.client.post(self.url, data=data)
+        print(resp)
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        ingredients = data.pop('ingredients')
+        self.assertTrue(Recipe.objects.filter(**data).exists())
+        ing = ingredients[0]
+        self.assertEqual(ing.get('id'), self.salt.id)
+        rec_ing = RecipeIngredient.objects.filter(
+            amount=ing.get('amount'),
+            ingredient=self.salt.id).last()
+        self.assertEqual(ing.get('amount'), str(rec_ing.amount))

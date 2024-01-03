@@ -63,24 +63,18 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        related_name='author_reviews',
+        related_name='author_recipe',
     )
     image = models.ImageField(
-        upload_to='recipes/images/',
         null=True,
-        default=None,
+        upload_to='recipes/images/',
         verbose_name='Картинка',
         blank=True
     )
-    description = models.TextField(
-        null=True,
-        verbose_name='Описание'
+    text = models.TextField(
+        verbose_name='Описание рецепта'
     )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата публикации',
-    )
-    preparation_time_minutes = models.PositiveSmallIntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления в минутах'
     )
     ingredients = models.ManyToManyField(
@@ -158,7 +152,6 @@ class ShoppingCart(models.Model):
         verbose_name='Рецепты в списке покупок',
         blank=True
     )
-
 
 # class RecipeTag(models.Model):
 #     pass

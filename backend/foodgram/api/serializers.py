@@ -60,14 +60,26 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 class FavoriteSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Favorite."""
 
+    id = serializers.IntegerField(source='recipe.id', read_only=True)
+    name = serializers.CharField(source='recipe.name', read_only=True)
+    image = serializers.ImageField(source='recipe.image', required=False, read_only=True)
+    cooking_time = serializers.IntegerField(source='recipe.cooking_time', read_only=True)
+
     class Meta:
         model = Favorite
         fields = (
             'id',
             'name',
             'image',
-            'cooking_time',
+            'cooking_time'
         )
+
+    def validate(self, data):
+        user = self.context['request'].user
+        recipe = self.context['view'].get_recipe()
+        if Favorite.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError('Вы уже подписаны на этот рецепт.')
+        return data
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -75,19 +87,6 @@ class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = (
-            'id',
-            'name',
-            'image',
-            'cooking_time',
-        )
-
-
-class RecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Recipe."""
-
-    class Meta:
-        model = Recipe
         fields = ()
 
 
@@ -121,3 +120,25 @@ class CustomUserSerializer(UserSerializer):
         if request and request.user.is_authenticated:
             return Follow.objects.filter(user=request.user, author=obj).exists()
         return False
+
+
+# TODO допилить два поля
+class RecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Recipe."""
+
+    author = CustomUserSerializer(read_only=True)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            # 'is_favorited',
+            # 'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
+        )
