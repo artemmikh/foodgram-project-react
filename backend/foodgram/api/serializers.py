@@ -82,12 +82,68 @@ class FavoriteSerializer(serializers.ModelSerializer):
         return data
 
 
+class RecipeSmallSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Recipe."""
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        )
+        read_only_fields = [
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        ]
+
+
 class FollowSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Follow."""
 
+    email = serializers.EmailField(source='author.email', read_only=True)
+    id = serializers.IntegerField(source='author.id', read_only=True)
+    username = serializers.CharField(source='author.username', read_only=True)
+    first_name = serializers.CharField(source='author.first_name', read_only=True)
+    last_name = serializers.CharField(source='author.last_name', read_only=True)
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = RecipeSmallSerializer(many=True, read_only=True, source='author.author_recipe')
+    recipes_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Follow
-        fields = ()
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+        )
+        read_only_fields = ['user', 'author']
+
+    def validate(self, data):
+        user = self.context['request'].user
+        author = self.context['view'].get_author()
+        if Follow.objects.filter(user=user, author=author).exists():
+            raise serializers.ValidationError('Вы уже подписаны на этого пользователя.')
+        elif user == author:
+            raise serializers.ValidationError('Нельзя подписаться на самого себя')
+        return data
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return Follow.objects.filter(user=request.user, author=obj.author).exists()
+        return False
+
+    def get_recipes_count(self, obj):
+        return obj.author.author_recipe.count()
 
 
 class CustomRegisterSerializer(UserCreateSerializer):

@@ -4,6 +4,7 @@ from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from django_filters import rest_framework
 from rest_framework.filters import SearchFilter
@@ -21,12 +22,15 @@ from api.serializers import (
     CustomUserSerializer,
     RecipeSerializer,
     FavoriteSerializer,
+    FollowSerializer,
 )
 from food.models import (
     Tag,
     Ingredient,
     Recipe,
     Favorite,
+    User,
+    Follow,
 )
 from api.permissions import (
     IsAdminOrReadOnly,
@@ -100,3 +104,18 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         instance = get_object_or_404(Favorite, recipe=self.get_recipe(), user=request.user)
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+    serializer_class = FollowSerializer
+    permission_classes = (IsAuthenticated,)
+    pagination_class = PageNumberPagination
+
+    def get_author(self):
+        return get_object_or_404(User, pk=self.kwargs.get('user_id'))
+
+    def get_queryset(self):
+        return Follow.objects.filter(author=self.get_author(), user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, author=self.get_author())

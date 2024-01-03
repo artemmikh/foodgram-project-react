@@ -9,6 +9,7 @@ from api.views import (
     CustomUserViewSet,
     RecipeViewSet,
     FavoriteViewSet,
+    FollowViewSet,
 )
 
 router_v1 = DefaultRouter()
@@ -19,6 +20,16 @@ router_v1.register(
     r'recipes/(?P<recipe_id>\d+)/favorite',
     FavoriteViewSet,
     basename='favorite',
+)
+router_v1.register(
+    r'users/(?P<user_id>\d+)/subscribe',
+    FollowViewSet,
+    basename='follow',
+)
+router_v1.register(
+    r'users/subscriptions',
+    FollowViewSet,
+    basename='follow_list',
 )
 
 urlpatterns = [
