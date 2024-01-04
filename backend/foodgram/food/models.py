@@ -5,44 +5,29 @@ User = get_user_model()
 
 
 class Ingredient(models.Model):
-    INGREDIENT_CHOICES = [
-        # возможно нужно поменять местами англ и рус
-        ('Salt', 'Соль'),
-        ('pepper', 'Перец'),
-        ('sugar', 'Сахар'),
-        ('flour', 'Мука'),
-        ('butter', 'Масло'),
-        ('onion', 'Лук'),
-        ('garlic', 'Чеснок'),
-        ('tomato', 'Помидор'),
-        ('chicken', 'Курица'),
-        ('beef', 'Говядина'),
-    ]
     name = models.CharField(
         max_length=256,
-        choices=INGREDIENT_CHOICES,
         verbose_name='Ингредиент'
     )
-    UNIT_CHOICES = [
-        ('g', 'грамм'),
-        ('ml', 'миллилитр'),
-        ('pcs', 'штука'),
-        ('tbsp', 'столовая ложка'),
-        ('to taste', 'по вкусу'),
-        ('pinch', 'щепотка'),
-    ]
     measurement_unit = models.CharField(
         max_length=50,
-        choices=UNIT_CHOICES,
         verbose_name='Единица измерения',
-        default='g'
+        default='г'
     )
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return self.name
 
 
 class Tag(models.Model):
     name = models.CharField(
         max_length=256,
-        verbose_name='Тег'
+        verbose_name='Тег',
+        unique=True
     )
     color = models.CharField(
         max_length=16,
@@ -52,6 +37,13 @@ class Tag(models.Model):
     slug = models.SlugField(
         unique=True,
         verbose_name='Слаг тега')
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -86,6 +78,10 @@ class Recipe(models.Model):
         Tag,
         verbose_name='Теги'
     )
+
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
 
 class RecipeIngredient(models.Model):
@@ -139,6 +135,10 @@ class Favorite(models.Model):
         verbose_name='Рецепт'
     )
 
+    class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
@@ -147,11 +147,15 @@ class ShoppingCart(models.Model):
         related_name='shopping_cart',
         verbose_name='Пользователь'
     )
-    recipes = models.ManyToManyField(
+    recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепты в списке покупок',
-        blank=True
+        on_delete=models.CASCADE,
     )
+
+    class Meta:
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
 
 # class RecipeTag(models.Model):
 #     pass

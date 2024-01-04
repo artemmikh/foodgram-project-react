@@ -15,6 +15,7 @@ from rest_framework.permissions import (
     AllowAny,
     DjangoModelPermissions,
 )
+from django.http import HttpResponse
 
 from api.serializers import (
     TagSerializer,
@@ -23,6 +24,7 @@ from api.serializers import (
     RecipeSerializer,
     FavoriteSerializer,
     FollowSerializer,
+    ShoppingCartSerializer,
 )
 from food.models import (
     Tag,
@@ -31,6 +33,7 @@ from food.models import (
     Favorite,
     User,
     Follow,
+    ShoppingCart,
 )
 from api.permissions import (
     IsAdminOrReadOnly,
@@ -94,6 +97,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     def get_recipe(self):
         return get_object_or_404(Recipe, pk=self.kwargs.get('recipe_id'))
 
+    # TODO нужен ли?
     # def get_queryset(self):
     #     return Favorite.objects.filter(recipe=self.get_recipe(), user=self.request.user)
 
@@ -109,13 +113,50 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 class FollowViewSet(viewsets.ModelViewSet):
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated,)
-    pagination_class = PageNumberPagination
 
     def get_author(self):
         return get_object_or_404(User, pk=self.kwargs.get('user_id'))
 
     def get_queryset(self):
-        return Follow.objects.filter(author=self.get_author(), user=self.request.user)
+        return Follow.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, author=self.get_author())
+
+    def delete(self, request, *args, **kwargs):
+        instance = get_object_or_404(Follow, user=self.request.user, author=self.get_author())
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ShoppingCartViewSet(viewsets.ModelViewSet):
+    serializer_class = ShoppingCartSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_recipe(self):
+        return get_object_or_404(Recipe, pk=self.kwargs.get('recipe_id'))
+
+    def get_queryset(self):
+        return ShoppingCart.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, recipe=self.get_recipe())
+
+    def delete(self, request, *args, **kwargs):
+        instance = get_object_or_404(ShoppingCart, recipe=self.get_recipe(), user=request.user)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        print(serializer.data)
+
+        # Создаем текстовый файл с списком покупок
+        shopping_list = "\n".join([f"{item['name']}: {item['cooking_time']} мин." for item in serializer.data])
+
+        # Отправляем файл в ответе
+        response = HttpResponse(shopping_list, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        return response

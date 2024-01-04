@@ -10,6 +10,7 @@ from api.views import (
     RecipeViewSet,
     FavoriteViewSet,
     FollowViewSet,
+    ShoppingCartViewSet,
 )
 
 router_v1 = DefaultRouter()
@@ -30,6 +31,11 @@ router_v1.register(
     r'users/subscriptions',
     FollowViewSet,
     basename='follow_list',
+)
+router_v1.register(
+    r'recipes/(?P<recipe_id>\d+)/shopping_cart',
+    ShoppingCartViewSet,
+    basename='shopping_cart',
 )
 
 urlpatterns = [

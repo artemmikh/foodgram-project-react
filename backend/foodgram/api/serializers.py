@@ -12,7 +12,7 @@ from food.models import (
 from food.models import Follow
 
 
-# Обработка картинок в сериализаторе
+# TODO Обработка картинок в сериализаторе
 # https://practicum.yandex.ru/learn/python-developer-plus/courses/ff822384-ebee-4c94-b637-107f18eb1678/sprints/147137/topics/1870f483-968b-4853-b51a-c0417384c8dd/lessons/df9057d3-0bf4-4bb1-9a25-ac17d9e52798/
 
 
@@ -45,7 +45,10 @@ class IngredientSerializer(serializers.ModelSerializer):
 class ShoppingCartSerializer(serializers.ModelSerializer):
     """Сериализатор для модели ShoppingCart."""
 
-    # cooking_time =
+    id = serializers.IntegerField(source='recipe.id', read_only=True)
+    name = serializers.CharField(source='recipe.name', read_only=True)
+    image = serializers.ImageField(source='recipe.image', required=False, read_only=True)
+    cooking_time = serializers.IntegerField(source='recipe.cooking_time', read_only=True)
 
     class Meta:
         model = ShoppingCart
@@ -53,8 +56,15 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'image',
-            # 'cooking_time',
+            'cooking_time'
         )
+
+    def validate(self, data):
+        user = self.context['request'].user
+        recipe = self.context['view'].get_recipe()
+        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError('Этот рецепт уже в списке покупок.')
+        return data
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -183,6 +193,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Recipe."""
 
     author = CustomUserSerializer(read_only=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -191,10 +203,22 @@ class RecipeSerializer(serializers.ModelSerializer):
             'tags',
             'author',
             'ingredients',
-            # 'is_favorited',
-            # 'is_in_shopping_cart',
+            'is_favorited',
+            'is_in_shopping_cart',
             'name',
             'image',
             'text',
             'cooking_time',
         )
+
+    def get_is_favorited(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return Favorite.objects.filter(user=user, recipe=obj).exists()
+        return False
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return ShoppingCart.objects.filter(user=user, recipe=obj).exists()
+        return False
