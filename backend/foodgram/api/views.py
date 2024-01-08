@@ -37,6 +37,7 @@ from food.models import (
 )
 from api.permissions import (
     IsAdminOrReadOnly,
+    IsAuthorOrReadOnly,
 )
 from api.filters import IngredientFilter
 from api.mixins import CreateListUpdateDestroy
@@ -82,12 +83,6 @@ class IngredientViewSet(CustomModelViewSet):
     filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter]
     filterset_class = IngredientFilter
     search_fields = ["name"]
-
-
-class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
@@ -153,10 +148,17 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
 
         print(serializer.data)
 
-        # Создаем текстовый файл с списком покупок
         shopping_list = "\n".join([f"{item['name']}: {item['cooking_time']} мин." for item in serializer.data])
 
-        # Отправляем файл в ответе
         response = HttpResponse(shopping_list, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
         return response
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)

@@ -8,8 +8,6 @@ urlpatterns = [
     path('api/', include('api.urls')),
 ]
 
-
-# включена обработка медиафайлов в режиме отладки:
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)

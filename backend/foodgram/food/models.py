@@ -61,6 +61,7 @@ class Recipe(models.Model):
         null=True,
         upload_to='recipes/images/',
         verbose_name='Картинка',
+        # TODO убрать blank=True
         blank=True
     )
     text = models.TextField(
@@ -88,12 +89,14 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
+        related_name='recipe_ingredient',
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        verbose_name='Ингредиент'
+        verbose_name='Ингредиент',
+        related_name='recipe_ingredient',
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента'
