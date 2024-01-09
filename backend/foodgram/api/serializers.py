@@ -35,20 +35,7 @@ class TagSerializer(serializers.ModelSerializer):
             'color',
             'slug',
         )
-        lookup_field = 'slug'
-
-
-class IngredientSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Ingredient."""
-
-    class Meta:
-        model = Ingredient
-        fields = (
-            'id',
-            'name',
-            'measurement_unit',
-        )
-        read_only_fields = ['name', 'measurement_unit']
+        read_only_fields = ("__all__",)
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
@@ -197,6 +184,29 @@ class CustomUserSerializer(UserSerializer):
         return False
 
 
+class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Ingredient."""
+    amount = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ingredient
+        fields = (
+            'id',
+            'name',
+            'measurement_unit',
+            'amount',
+        )
+        read_only_fields = ['name', 'measurement_unit']
+
+    def get_amount(self, obj):
+        try:
+            recipe_ingredients = RecipeIngredient.objects.filter(ingredient=obj)
+            if recipe_ingredients.exists():
+                return recipe_ingredients.first().amount
+        except RecipeIngredient.DoesNotExist:
+            return None
+
+
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для модели RecipeIngredient."""
 
@@ -205,6 +215,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit', read_only=True
     )
+
     amount = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -224,8 +235,9 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     tags = serializers.PrimaryKeyRelatedField(
+        many=True,
         queryset=Tag.objects.all(),
-        many=True)
+    )
     ingredients = RecipeIngredientSerializer(many=True)
     image = Base64ImageField(required=False, allow_null=True)
 
@@ -259,6 +271,14 @@ class RecipeSerializer(serializers.ModelSerializer):
                 recipe=recipe,
             )
         return recipe
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['tags'] = TagSerializer(instance.tags.all(), many=True).data
+        data['ingredients'] = IngredientSerializer(
+            instance.ingredients.all(), many=True
+        ).data
+        return data
 
     def get_is_favorited(self, obj):
         user = self.context['request'].user
