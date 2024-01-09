@@ -4,7 +4,7 @@ from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import status
 from django_filters import rest_framework
 from rest_framework.filters import SearchFilter
@@ -25,6 +25,7 @@ from api.serializers import (
     FavoriteSerializer,
     FollowSerializer,
     ShoppingCartSerializer,
+    IngredientListSerializer,
 )
 from food.models import (
     Tag,
@@ -76,7 +77,7 @@ class IngredientViewSet(CustomModelViewSet):
     """ViewSet для сериализатора CategorySerializer."""
 
     queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
+    serializer_class = IngredientListSerializer
     pagination_class = None
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter]
@@ -158,6 +159,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    pagination_class = LimitOffsetPagination
+    filter_backends = (rest_framework.DjangoFilterBackend,)
+    filterset_fields = ('author',)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

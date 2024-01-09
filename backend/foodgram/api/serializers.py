@@ -11,6 +11,7 @@ from food.models import (
     Favorite,
     Follow,
     RecipeIngredient,
+    User,
 )
 from food.models import Follow
 
@@ -155,8 +156,8 @@ class FollowSerializer(serializers.ModelSerializer):
 class CustomRegisterSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         fields = (
-            'email',
             'id',
+            'email',
             'username',
             'first_name',
             'last_name',
@@ -182,6 +183,14 @@ class CustomUserSerializer(UserSerializer):
         if request and request.user.is_authenticated:
             return Follow.objects.filter(user=request.user, author=obj).exists()
         return False
+
+
+class IngredientListSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Ingredient."""
+
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -291,3 +300,18 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user.is_authenticated:
             return ShoppingCart.objects.filter(user=user, recipe=obj).exists()
         return False
+
+
+def del_for_test_postman():
+    RecipeIngredient.objects.all().delete()
+    Recipe.objects.all().delete()
+    usernames_to_delete = ['vasya.pupkin', 'second-user', 'third-user-username']
+    for username in usernames_to_delete:
+        try:
+            user_to_delete = User.objects.get(username=username)
+            user_to_delete.delete()
+            print(f"Пользователь {username} успешно удален.")
+        except User.DoesNotExist:
+            print(f"Пользователь {username} не найден.")
+
+# del_for_test_postman()
