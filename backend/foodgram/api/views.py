@@ -63,7 +63,6 @@ class CustomUserViewSet(UserViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# TODO "Структура ответа должна соответствовать ожидаемой"
 class TagViewSet(CustomModelViewSet):
     """ViewSet для сериализатора CategorySerializer."""
 

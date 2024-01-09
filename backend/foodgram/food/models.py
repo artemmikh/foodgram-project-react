@@ -39,11 +39,12 @@ class Tag(models.Model):
         verbose_name='Слаг тега')
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class Recipe(models.Model):
