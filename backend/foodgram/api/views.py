@@ -16,6 +16,7 @@ from rest_framework.permissions import (
     DjangoModelPermissions,
 )
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 
 from api.serializers import (
     TagSerializer,
@@ -40,7 +41,7 @@ from api.permissions import (
     IsAdminOrReadOnly,
     IsAuthorOrReadOnly,
 )
-from api.filters import IngredientFilter
+from api.filters import IngredientFilter, RecipeFilter
 from api.mixins import CreateListUpdateDestroy
 
 
@@ -160,8 +161,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     pagination_class = LimitOffsetPagination
-    filter_backends = (rest_framework.DjangoFilterBackend,)
-    filterset_fields = ('author',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
