@@ -42,7 +42,7 @@ from api.permissions import (
     IsAuthorOrReadOnly,
 )
 from api.filters import IngredientFilter, RecipeFilter
-from api.mixins import CreateListUpdateDestroy
+from api.pagination import CustomLimitOffsetPagination
 
 
 class CustomModelViewSet(viewsets.ModelViewSet):
@@ -93,10 +93,6 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     def get_recipe(self):
         return get_object_or_404(Recipe, pk=self.kwargs.get('recipe_id'))
 
-    # TODO нужен ли?
-    # def get_queryset(self):
-    #     return Favorite.objects.filter(recipe=self.get_recipe(), user=self.request.user)
-
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, recipe=self.get_recipe())
 
@@ -109,6 +105,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 class FollowViewSet(viewsets.ModelViewSet):
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = CustomLimitOffsetPagination
 
     def get_author(self):
         return get_object_or_404(User, pk=self.kwargs.get('user_id'))
@@ -159,10 +156,13 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+# TODO postman
+# TODO подписка с ?recipes_limit=2 мой тест проходит, постмана нет. Повторный конкретный постман тест проходит

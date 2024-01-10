@@ -16,7 +16,6 @@ from api.views import (
 router_v1 = DefaultRouter()
 router_v1.register('tags', TagViewSet)
 router_v1.register('ingredients', IngredientViewSet)
-router_v1.register('recipes', RecipeViewSet)
 router_v1.register(
     r'recipes/(?P<recipe_id>\d+)/favorite',
     FavoriteViewSet,
@@ -37,6 +36,7 @@ router_v1.register(
     ShoppingCartViewSet,
     basename='shopping_cart',
 )
+router_v1.register('recipes', RecipeViewSet)
 
 urlpatterns = [
     path('users/me/', CustomUserViewSet.as_view({'get': 'me'}), name='user-me'),

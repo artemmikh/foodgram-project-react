@@ -265,10 +265,30 @@ class RecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
+    def validate_ingredients(self, value):
+
+        if not value:
+            raise serializers.ValidationError('Ингредиенты обязательны для заполнения')
+
+        for ingredient in value:
+            ingredient_id = ingredient.get('id')
+            amount = ingredient.get('amount')
+
+            if amount is not None and amount < 1:
+                raise serializers.ValidationError('Количество ингредиента не может быть меньше 1.')
+
+            try:
+                Ingredient.objects.get(id=ingredient_id)
+            except Ingredient.DoesNotExist:
+                raise serializers.ValidationError(f'Ингредиент с id {ingredient_id} не существует.')
+        return value
+
     def create(self, validated_data):
 
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
+
+        self.validate_ingredients(ingredients)
 
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
@@ -280,6 +300,29 @@ class RecipeSerializer(serializers.ModelSerializer):
                 recipe=recipe,
             )
         return recipe
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+
+        tags = validated_data.get('tags')
+        if tags:
+            instance.tags.set(tags)
+
+        ingredients_data = validated_data.get('ingredients')
+        self.validate_ingredients(ingredients_data)
+        if ingredients_data:
+            instance.ingredients.all().delete()
+
+            for ingredient_data in ingredients_data:
+                RecipeIngredient.objects.create(
+                    ingredient=Ingredient.objects.get(id=ingredient_data['id']),
+                    amount=ingredient_data['amount'],
+                    recipe=instance,
+                )
+        instance.save()
+        return instance
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -303,6 +346,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 def del_for_test_postman():
+    # Ingredient.objects.all().delete()
     RecipeIngredient.objects.all().delete()
     Recipe.objects.all().delete()
     usernames_to_delete = ['vasya.pupkin', 'second-user', 'third-user-username']
@@ -314,4 +358,5 @@ def del_for_test_postman():
         except User.DoesNotExist:
             print(f"Пользователь {username} не найден.")
 
-# del_for_test_postman()
+
+del_for_test_postman()
