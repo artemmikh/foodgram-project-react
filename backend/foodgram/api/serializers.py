@@ -358,5 +358,4 @@ def del_for_test_postman():
         except User.DoesNotExist:
             print(f"Пользователь {username} не найден.")
 
-
-del_for_test_postman()
+    # del_for_test_postman()

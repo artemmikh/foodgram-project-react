@@ -140,18 +140,6 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-
-        print(serializer.data)
-
-        shopping_list = "\n".join([f"{item['name']}: {item['cooking_time']} мин." for item in serializer.data])
-
-        response = HttpResponse(shopping_list, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
-        return response
-
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
@@ -163,6 +151,33 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    @action(detail=False, methods=['get'], url_path='download_shopping_cart')
+    def create_shopping_list(self, request):
+        user = self.request.user
+
+        recipes = Recipe.objects.filter(author=user)
+        shopping_list_items = {}
+
+        for recipe in recipes:
+            ingredients = recipe.recipe_ingredient.all()
+            for ingredient in ingredients:
+                if ingredient.ingredient.name not in shopping_list_items:
+                    shopping_list_items[ingredient.ingredient.name] = {
+                        'amount': ingredient.amount,
+                        'measurement_unit': ingredient.ingredient.measurement_unit
+                    }
+                else:
+                    shopping_list_items[ingredient.ingredient.name]['amount'] += ingredient.amount
+
+        shopping_list_text = ""
+        for name, item in shopping_list_items.items():
+            shopping_list_text += f"{name} ({item['measurement_unit']}) — {item['amount']}\n"
+
+        response = HttpResponse(shopping_list_text, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="Список покупок.txt"'
+
+        return response
 
 # TODO postman
 # TODO подписка с ?recipes_limit=2 мой тест проходит, постмана нет. Повторный конкретный постман тест проходит
