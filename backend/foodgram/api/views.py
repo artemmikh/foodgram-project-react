@@ -43,6 +43,7 @@ from api.permissions import (
 )
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import CustomLimitOffsetPagination
+from rest_framework import serializers
 
 
 class CustomModelViewSet(viewsets.ModelViewSet):

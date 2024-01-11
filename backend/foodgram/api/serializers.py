@@ -58,9 +58,14 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = self.context['request'].user
-        recipe = self.context['view'].get_recipe()
-        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+        recipe_id = self.context['view'].kwargs.get('recipe_id')
+
+        if not Recipe.objects.filter(pk=recipe_id).exists():
+            raise serializers.ValidationError('Рецепт не найден.')
+
+        if ShoppingCart.objects.filter(user=user, recipe=recipe_id).exists():
             raise serializers.ValidationError('Этот рецепт уже в списке покупок.')
+
         return data
 
 
@@ -346,9 +351,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 def del_for_test_postman():
-    # Ingredient.objects.all().delete()
-    RecipeIngredient.objects.all().delete()
-    Recipe.objects.all().delete()
+    # RecipeIngredient.objects.all().delete()
+    # Recipe.objects.all().delete()
+    # Ingredient.objects.create(name='молоко', measurement_unit='мл')
+    # Ingredient.objects.create(name='соль', measurement_unit='мл')
+    # Ingredient.objects.create(name='мясо', measurement_unit='г')
     usernames_to_delete = ['vasya.pupkin', 'second-user', 'third-user-username']
     for username in usernames_to_delete:
         try:
@@ -358,4 +365,4 @@ def del_for_test_postman():
         except User.DoesNotExist:
             print(f"Пользователь {username} не найден.")
 
-    # del_for_test_postman()
+# del_for_test_postman()
