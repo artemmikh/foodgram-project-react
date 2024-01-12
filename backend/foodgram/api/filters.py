@@ -3,7 +3,10 @@ from food.models import Ingredient, Tag, Recipe
 
 
 class IngredientFilter(rest_framework.FilterSet):
-    name = rest_framework.CharFilter(field_name="name", lookup_expr="istartswith")
+    name = rest_framework.CharFilter(
+        field_name="name",
+        lookup_expr="istartswith"
+    )
 
     class Meta:
         model = Ingredient

@@ -44,8 +44,9 @@ class CustomModelViewSet(viewsets.ModelViewSet):
 
     def handle_exception(self, exc):
         if isinstance(exc, PermissionDenied):
-            return Response({"detail": "У вас нет прав для выполнения этого действия."},
-                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response(
+                {"detail": "У вас нет прав для выполнения этого действия."},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super().handle_exception(exc)
 
 
@@ -75,7 +76,9 @@ class IngredientViewSet(CustomModelViewSet):
     serializer_class = IngredientListSerializer
     pagination_class = None
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter]
+    filter_backends = [
+        rest_framework.DjangoFilterBackend,
+        SearchFilter]
     filterset_class = IngredientFilter
     search_fields = ["name"]
 
@@ -85,19 +88,31 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_recipe(self):
-        return get_object_or_404(Recipe, pk=self.kwargs.get('recipe_id'))
+        return get_object_or_404(
+            Recipe,
+            pk=self.kwargs.get('recipe_id'))
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, recipe=self.get_recipe())
+        serializer.save(
+            user=self.request.user,
+            recipe=self.get_recipe())
 
     def delete(self, request, *args, **kwargs):
         user = request.user
         recipe = self.get_recipe()
 
-        if not Favorite.objects.filter(user=user, recipe=recipe).exists():
-            return Response({'detail': 'Этого рецепта нет в избранном'}, status=status.HTTP_400_BAD_REQUEST)
+        if not Favorite.objects.filter(
+                user=user,
+                recipe=recipe).exists():
+            return Response(
+                {'detail': 'Этого рецепта нет в избранном'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        instance = get_object_or_404(Favorite, recipe=self.get_recipe(), user=request.user)
+        instance = get_object_or_404(
+            Favorite,
+            recipe=self.get_recipe(),
+            user=request.user)
+
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -108,23 +123,34 @@ class FollowViewSet(viewsets.ModelViewSet):
     pagination_class = CustomLimitOffsetPagination
 
     def get_author(self):
-        return get_object_or_404(User, pk=self.kwargs.get('user_id'))
+        return get_object_or_404(
+            User,
+            pk=self.kwargs.get('user_id'))
 
     def get_queryset(self):
         return Follow.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, author=self.get_author())
+        serializer.save(
+            user=self.request.user,
+            author=self.get_author())
 
     def delete(self, request, *args, **kwargs):
         print(123)
         user = request.user
         author = self.get_author()
 
-        if not Follow.objects.filter(user=user, author=author).exists():
-            return Response({'detail': 'Подписка не найдена.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not Follow.objects.filter(
+                user=user,
+                author=author).exists():
+            return Response(
+                {'detail': 'Подписка не найдена.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        instance = get_object_or_404(Follow, user=self.request.user, author=self.get_author())
+        instance = get_object_or_404(
+            Follow,
+            user=self.request.user,
+            author=self.get_author())
         self.perform_destroy(instance)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -135,22 +161,35 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_recipe(self):
-        return get_object_or_404(Recipe, pk=self.kwargs.get('recipe_id'))
+        return get_object_or_404(
+            Recipe,
+            pk=self.kwargs.get('recipe_id'))
 
     def get_queryset(self):
-        return ShoppingCart.objects.filter(user=self.request.user)
+        return ShoppingCart.objects.filter(
+            user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, recipe=self.get_recipe())
+        serializer.save(
+            user=self.request.user,
+            recipe=self.get_recipe())
 
     def delete(self, request, *args, **kwargs):
         user = request.user
         recipe = self.get_recipe()
 
-        if not ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
-            return Response({'detail': 'Этого рецепта нет в списке покупок'}, status=status.HTTP_400_BAD_REQUEST)
+        if not ShoppingCart.objects.filter(
+                user=user,
+                recipe=recipe).exists():
+            return Response(
+                {'detail': 'Этого рецепта нет в списке покупок'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        instance = get_object_or_404(ShoppingCart, recipe=self.get_recipe(), user=request.user)
+        instance = get_object_or_404(
+            ShoppingCart,
+            recipe=self.get_recipe(),
+            user=request.user)
+
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -166,7 +205,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=False, methods=['get'], url_path='download_shopping_cart')
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='download_shopping_cart')
     def create_shopping_list(self, request):
         user = self.request.user
 
@@ -176,19 +218,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
         for recipe in recipes:
             ingredients = recipe.recipe_ingredient.all()
             for ingredient in ingredients:
-                if ingredient.ingredient.name not in shopping_list_items:
-                    shopping_list_items[ingredient.ingredient.name] = {
+                name = ingredient.ingredient.name
+                if name not in shopping_list_items:
+                    shopping_list_items[name] = {
                         'amount': ingredient.amount,
-                        'measurement_unit': ingredient.ingredient.measurement_unit
+                        'measurement_unit': (
+                            ingredient.ingredient.measurement_unit)
                     }
                 else:
-                    shopping_list_items[ingredient.ingredient.name]['amount'] += ingredient.amount
+                    shopping_list_items[name]['amount'] += ingredient.amount
 
         shopping_list_text = ""
         for name, item in shopping_list_items.items():
-            shopping_list_text += f"{name} ({item['measurement_unit']}) — {item['amount']}\n"
+            shopping_list_text += (
+                f"{name} ({item['measurement_unit']}) — {item['amount']}\n"
+            )
 
         response = HttpResponse(shopping_list_text, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="Список покупок.txt"'
+        response['Content-Disposition'] = (
+            'attachment; filename="Список покупок.txt"')
 
         return response

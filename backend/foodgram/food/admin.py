@@ -24,7 +24,8 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
     def get_queryset(self, request):
-        queryset = super().get_queryset(request).annotate(favorite_count=Count('favorite'))
+        queryset = super().get_queryset(request).annotate(
+            favorite_count=Count('favorite'))
         return queryset
 
     def favorite_count(self, obj):
