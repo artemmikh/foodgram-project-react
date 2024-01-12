@@ -192,6 +192,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = 'attachment; filename="Список покупок.txt"'
 
         return response
-
-# TODO postman
-# TODO подписка с ?recipes_limit=2 мой тест проходит, постмана нет. Повторный конкретный постман тест проходит

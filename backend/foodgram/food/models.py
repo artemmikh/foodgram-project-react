@@ -62,8 +62,6 @@ class Recipe(models.Model):
         null=True,
         upload_to='recipes/images/',
         verbose_name='Картинка',
-        # TODO убрать blank=True
-        blank=True
     )
     text = models.TextField(
         verbose_name='Описание рецепта'
@@ -85,6 +83,9 @@ class Recipe(models.Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
+    def __str__(self):
+        return self.name
+
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
@@ -103,6 +104,10 @@ class RecipeIngredient(models.Model):
         verbose_name='Количество ингредиента'
     )
 
+    class Meta:
+        verbose_name = 'Рецепт-ингредиент'
+        verbose_name_plural = 'Рецепт-ингредиент'
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -119,8 +124,8 @@ class Follow(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Подписчик'
-        verbose_name_plural = 'Подписчики'
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
 
     def __str__(self):
         return f'{self.user}'
@@ -160,12 +165,3 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-
-# class RecipeTag(models.Model):
-#     pass
-# в Django использование ManyToManyField сразу в модели
-# позволяет фреймворку автоматически создавать промежуточную
-# таблицу для управления отношением многие ко многим.
-# Промежуточная таблица создается скрытым образом,
-# и вам не нужно явно создавать ее модель, если вы не
-# планируете добавлять к ней дополнительные поля.

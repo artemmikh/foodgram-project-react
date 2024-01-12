@@ -12,6 +12,7 @@ class UserAdmin(admin.ModelAdmin):
     UserAdmin.fieldsets += (
         ('Extra Fields', {'fields': ('is_admin',)}),
     )
+    list_filter = ('email', 'username',)
 
 
 admin.site.register(MyUser, UserAdmin)
