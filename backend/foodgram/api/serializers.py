@@ -1,7 +1,7 @@
-from rest_framework import serializers
-from djoser.serializers import UserCreateSerializer, UserSerializer
 import base64
 from django.core.files.base import ContentFile
+from rest_framework import serializers
+from djoser.serializers import UserCreateSerializer, UserSerializer
 
 from food.models import (
     Recipe,
@@ -154,7 +154,6 @@ class FollowSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         author = self.context['view'].get_author()
-        author_id = self.context['view'].kwargs.get('user_id')
         if Follow.objects.filter(user=user, author=author).exists():
             raise serializers.ValidationError('Вы уже подписаны на этого пользователя.')
         elif user == author:
@@ -373,5 +372,4 @@ def del_for_test_postman():
         except User.DoesNotExist:
             print(f"Пользователь {username} не найден.")
 
-
-del_for_test_postman()
+# del_for_test_postman()

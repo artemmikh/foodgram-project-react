@@ -1,26 +1,20 @@
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework
+from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
-from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import status
-from django_filters import rest_framework
 from rest_framework.filters import SearchFilter
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly,
-    IsAuthenticated,
-    AllowAny,
-    DjangoModelPermissions,
-)
-from django.http import HttpResponse
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated
+from djoser.views import UserViewSet
 
 from api.serializers import (
     TagSerializer,
-    IngredientSerializer,
     CustomUserSerializer,
     RecipeSerializer,
     FavoriteSerializer,
@@ -43,7 +37,6 @@ from api.permissions import (
 )
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import CustomLimitOffsetPagination
-from rest_framework import serializers
 
 
 class CustomModelViewSet(viewsets.ModelViewSet):
