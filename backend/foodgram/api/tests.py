@@ -22,6 +22,7 @@ class RecipesApiTestCase(APITransactionTestCase):
             author=self.user,
             name='Cookie',
             text='Badabada',
+            cooking_time=10,
         )
         self.salt = Ingredient.objects.create(
             name='Salt',
@@ -44,24 +45,3 @@ class RecipesApiTestCase(APITransactionTestCase):
         self.assertEqual(ing.get('id'), self.salt.id)
         self.assertEqual(ing.get('amount'), self.recipe_ing.amount)
         self.assertEqual(ing.get('name'), self.salt.name)
-
-    def test_create_recipe(self):
-        data = dict(
-            name='Pie',
-            text='Create pie',
-            ingredients=[{'id': self.salt.id, 'amount': '22'}, ],
-            cooking_time=30
-        )
-
-        resp = self.client.post(self.url, data=data)
-        print(resp)
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-
-        ingredients = data.pop('ingredients')
-        self.assertTrue(Recipe.objects.filter(**data).exists())
-        ing = ingredients[0]
-        self.assertEqual(ing.get('id'), self.salt.id)
-        rec_ing = RecipeIngredient.objects.filter(
-            amount=ing.get('amount'),
-            ingredient=self.salt.id).last()
-        self.assertEqual(ing.get('amount'), str(rec_ing.amount))

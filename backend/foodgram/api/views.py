@@ -98,6 +98,12 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user, recipe=self.get_recipe())
 
     def delete(self, request, *args, **kwargs):
+        user = request.user
+        recipe = self.get_recipe()
+
+        if not Favorite.objects.filter(user=user, recipe=recipe).exists():
+            return Response({'detail': 'Этого рецепта нет в избранном'}, status=status.HTTP_400_BAD_REQUEST)
+
         instance = get_object_or_404(Favorite, recipe=self.get_recipe(), user=request.user)
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -118,8 +124,16 @@ class FollowViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user, author=self.get_author())
 
     def delete(self, request, *args, **kwargs):
+        print(123)
+        user = request.user
+        author = self.get_author()
+
+        if not Follow.objects.filter(user=user, author=author).exists():
+            return Response({'detail': 'Подписка не найдена.'}, status=status.HTTP_400_BAD_REQUEST)
+
         instance = get_object_or_404(Follow, user=self.request.user, author=self.get_author())
         self.perform_destroy(instance)
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -137,6 +151,12 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user, recipe=self.get_recipe())
 
     def delete(self, request, *args, **kwargs):
+        user = request.user
+        recipe = self.get_recipe()
+
+        if not ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            return Response({'detail': 'Этого рецепта нет в списке покупок'}, status=status.HTTP_400_BAD_REQUEST)
+
         instance = get_object_or_404(ShoppingCart, recipe=self.get_recipe(), user=request.user)
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
