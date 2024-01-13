@@ -3,7 +3,7 @@ from food.models import Ingredient
 
 
 def import_ingredients_json():
-    json_file_path = '.../ingredients.json'
+    json_file_path = 'food/data/ingredients.json'
     with open(json_file_path, 'r') as file:
         data = json.load(file)
         ingredients = [Ingredient(
