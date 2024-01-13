@@ -1,5 +1,7 @@
 import json
-from food.models import Ingredient
+from django.utils.text import slugify
+
+from food.models import Ingredient, Tag
 
 
 def import_ingredients_json():
@@ -12,3 +14,19 @@ def import_ingredients_json():
         Ingredient.objects.bulk_create(ingredients)
 
     print("Ингредиенты успешно добавлены в базу данных.")
+
+    tags_data = [
+        {'name': 'Завтрак', 'color': '#FF0000'},
+        {'name': 'Обед', 'color': '#00FF00'},
+        {'name': 'Ужин', 'color': '#0000FF'}
+    ]
+
+    tags = [Tag(
+        name=item['name'],
+        color=item['color'],
+        slug=slugify(item['name'])
+    ) for item in tags_data]
+
+    Tag.objects.bulk_create(tags)
+
+    print("Теги успешно добавлены в базу данных.")

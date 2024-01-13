@@ -23,14 +23,15 @@ services:
       - media:/media
   frontend:
     container_name: frontend_prod
-    image: arttmikh/foodgram_frontend  # Качаем с Docker Hub
+    image: arttmikh/foodgram_frontend
     env_file: .env
     command: cp -r /app/build/. /frontend_static
     volumes:
       - static:/frontend_static
+
   gateway:
     container_name: nginx_prod
-    image: arttmikh/foodgram_gateway  # Качаем с Docker Hub
+    image: arttmikh/foodgram_gateway
     env_file: .env
     volumes:
       - static:/static
