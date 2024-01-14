@@ -38,20 +38,10 @@ def del_for_test_postman():
     # Ingredient.objects.create(name='молоко', measurement_unit='мл')
     # Ingredient.objects.create(name='соль', measurement_unit='мл')
     # Ingredient.objects.create(name='мясо', measurement_unit='г')
-    usernames_to_delete = ['vasya.pupkin', 'second-user', 'third-user-username']
-    for username in usernames_to_delete:
-        try:
-            user_to_delete = User.objects.get(username=username)
-            user_to_delete.delete()
-            print(f"Пользователь {username} успешно удален.")
-        except User.DoesNotExist:
-            print(f"Пользователь {username} не найден.")
-
-
-def del_for_test_postman():
-    # RecipeIngredient.objects.all().delete()
-    # Recipe.objects.all().delete()
-    usernames_to_delete = ['vasya.pupkin', 'second-user', 'third-user-username']
+    usernames_to_delete = [
+        'vasya.pupkin',
+        'second-user',
+        'third-user-username']
     for username in usernames_to_delete:
         try:
             user_to_delete = User.objects.get(username=username)
@@ -78,7 +68,8 @@ def import_ingredients_to_db():
 
     ingredients = []
     for item in ingredients_data:
-        existing_ingredient = Ingredient.objects.filter(name=item['name']).first()
+        existing_ingredient = Ingredient.objects.filter(
+            name=item['name']).first()
         if existing_ingredient:
             print(f"Ингредиент с именем '{item['name']}' уже существует.")
         else:

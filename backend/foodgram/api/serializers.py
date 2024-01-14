@@ -11,7 +11,6 @@ from food.models import (
     Favorite,
     Follow,
     RecipeIngredient,
-    User
 )
 
 
@@ -375,22 +374,27 @@ class RecipeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.cooking_time = validated_data.get(
+            'cooking_time',
+            instance.cooking_time)
 
         tags = validated_data.get('tags')
         if tags:
             if len(set(tags)) != len(tags):
-                raise serializers.ValidationError('Повторяющиеся теги не допускаются.')
+                raise serializers.ValidationError(
+                    'Повторяющиеся теги не допускаются.')
 
             instance.tags.set(tags)
         else:
-            raise serializers.ValidationError('Теги обязательны для обновления рецепта.')
+            raise serializers.ValidationError(
+                'Теги обязательны для обновления рецепта.')
 
         ingredients_data = validated_data.get('ingredients')
         if ingredients_data:
             # уд только те которых нет в новых данных
             current_ingredient_ids = [item['id'] for item in ingredients_data]
-            instance.ingredients.exclude(id__in=current_ingredient_ids).delete()
+            instance.ingredients.exclude(
+                id__in=current_ingredient_ids).delete()
 
             for ingredient_data in ingredients_data:
                 ingredient_id = ingredient_data['id']

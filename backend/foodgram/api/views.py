@@ -36,9 +36,7 @@ from api.permissions import (
     IsAuthorOrReadOnly,
 )
 from api.filters import IngredientFilter, RecipeFilter
-from api.pagination import (
-    CustomLimitOffsetPagination,
-    CustomPageNumberPaginator)
+from api.pagination import CustomPageNumberPaginator
 
 
 class CustomModelViewSet(viewsets.ModelViewSet):
