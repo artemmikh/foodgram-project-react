@@ -36,7 +36,9 @@ from api.permissions import (
     IsAuthorOrReadOnly,
 )
 from api.filters import IngredientFilter, RecipeFilter
-from api.pagination import CustomLimitOffsetPagination
+from api.pagination import (
+    CustomLimitOffsetPagination,
+    CustomPageNumberPaginator)
 
 
 class CustomModelViewSet(viewsets.ModelViewSet):
@@ -120,7 +122,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 class FollowViewSet(viewsets.ModelViewSet):
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated,)
-    pagination_class = CustomLimitOffsetPagination
+    pagination_class = CustomPageNumberPaginator
 
     def get_author(self):
         return get_object_or_404(

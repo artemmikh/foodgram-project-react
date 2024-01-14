@@ -11,6 +11,7 @@ from food.models import (
     Favorite,
     Follow,
     RecipeIngredient,
+    User
 )
 
 
@@ -324,7 +325,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError(
                 'Ингредиенты обязательны для заполнения')
-
+        seen_ingredient_ids = set()
         for ingredient in value:
             ingredient_id = ingredient.get('id')
             amount = ingredient.get('amount')
@@ -332,6 +333,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             if amount is not None and amount < 1:
                 raise serializers.ValidationError(
                     'Количество ингредиента не может быть меньше 1.')
+
+            if ingredient_id in seen_ingredient_ids:
+                raise serializers.ValidationError(
+                    'Ингредиент повторяется в рецепте.')
+            seen_ingredient_ids.add(ingredient_id)
 
             try:
                 Ingredient.objects.get(id=ingredient_id)
@@ -347,6 +353,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         self.validate_ingredients(ingredients)
 
+        if len(set(tags)) != len(tags):
+            raise serializers.ValidationError(
+                'Тег повторяется, так нельзя.')
+
+        if 'image' not in validated_data or validated_data['image'] is None:
+            raise serializers.ValidationError(
+                'Изображение обязательно нужно добавить')
+
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
 
@@ -361,26 +375,34 @@ class RecipeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time',
-            instance.cooking_time)
+        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
 
         tags = validated_data.get('tags')
         if tags:
+            if len(set(tags)) != len(tags):
+                raise serializers.ValidationError('Повторяющиеся теги не допускаются.')
+
             instance.tags.set(tags)
+        else:
+            raise serializers.ValidationError('Теги обязательны для обновления рецепта.')
 
         ingredients_data = validated_data.get('ingredients')
-        self.validate_ingredients(ingredients_data)
         if ingredients_data:
-            instance.ingredients.all().delete()
+            # уд только те которых нет в новых данных
+            current_ingredient_ids = [item['id'] for item in ingredients_data]
+            instance.ingredients.exclude(id__in=current_ingredient_ids).delete()
 
             for ingredient_data in ingredients_data:
-                RecipeIngredient.objects.create(
-                    ingredient=Ingredient.objects.get(
-                        id=ingredient_data['id']),
-                    amount=ingredient_data['amount'],
+                ingredient_id = ingredient_data['id']
+                amount = ingredient_data['amount']
+                ingredient, created = RecipeIngredient.objects.get_or_create(
+                    ingredient=Ingredient.objects.get(id=ingredient_id),
+                    amount=amount,
                     recipe=instance,
                 )
+        else:
+            raise serializers.ValidationError(
+                'Ингредиенты обязательны для обновления рецепта.')
         instance.save()
         return instance
 
