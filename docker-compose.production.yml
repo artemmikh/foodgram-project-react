@@ -20,7 +20,7 @@ services:
     env_file: .env
     volumes:
       - static:/backend_static
-      - media:/media
+      - media:/app/media/
   frontend:
     container_name: frontend_prod
     image: arttmikh/foodgram_frontend
@@ -36,5 +36,6 @@ services:
     volumes:
       - static:/static
       - media:/var/html/media/
+
     ports:
       - 8000:80
