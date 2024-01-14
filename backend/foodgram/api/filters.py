@@ -34,10 +34,10 @@ class RecipeFilter(rest_framework.FilterSet):
         return queryset
 
     def filter_is_favorited(self, queryset, name, value):
-        return self._get_queryset(queryset, name, value, 'favorites')
-
-    def _get_queryset(self, queryset, name, value, key):
         user = self.request.user
-        if value and not user.is_anonymous:
-            return queryset.filter(**{f'{key}__user': self.request.user})
+        if user.is_authenticated:
+            if value:
+                return queryset.filter(author__following__user=user)
+            else:
+                return queryset.exclude(author__following__user=user)
         return queryset
