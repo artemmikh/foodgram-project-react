@@ -8,21 +8,22 @@ volumes:
 services:
 
   db:
-    container_name: postgre_db_prod
+    container_name: postgre_db
     image: postgres:13.10
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
 
   backend:
-    container_name: backend_prod
+    container_name: backend
     image: arttmikh/foodgram_backend
     env_file: .env
     volumes:
       - static:/backend_static
       - media:/media
+
   frontend:
-    container_name: frontend_prod
+    container_name: frontend
     image: arttmikh/foodgram_frontend
     env_file: .env
     command: cp -r /app/build/. /frontend_static
@@ -30,7 +31,7 @@ services:
       - static:/frontend_static
 
   gateway:
-    container_name: nginx_prod
+    container_name: nginx
     image: arttmikh/foodgram_gateway
     env_file: .env
     volumes:
