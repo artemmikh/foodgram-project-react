@@ -12,6 +12,12 @@ from food.models import (
 )
 
 
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+    min_num = 1
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """
@@ -32,6 +38,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return obj.favorite_count
 
     favorite_count.short_description = 'В избранном'
+    inlines = [RecipeIngredientInline]
 
 
 @admin.register(Ingredient)

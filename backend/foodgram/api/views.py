@@ -37,6 +37,7 @@ from api.permissions import (
 )
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import CustomPageNumberPaginator
+from api.utils import generate_shopping_list
 
 
 class CustomModelViewSet(viewsets.ModelViewSet):
@@ -80,7 +81,7 @@ class IngredientViewSet(CustomModelViewSet):
         rest_framework.DjangoFilterBackend,
         SearchFilter]
     filterset_class = IngredientFilter
-    search_fields = ["name"]
+    search_fields = ['name']
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
@@ -136,7 +137,6 @@ class FollowViewSet(viewsets.ModelViewSet):
             author=self.get_author())
 
     def delete(self, request, *args, **kwargs):
-        print(123)
         user = request.user
         author = self.get_author()
 
@@ -212,27 +212,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def create_shopping_list(self, request):
         user = self.request.user
 
-        recipes = Recipe.objects.filter(author=user)
-        shopping_list_items = {}
-
-        for recipe in recipes:
-            ingredients = recipe.recipe_ingredient.all()
-            for ingredient in ingredients:
-                name = ingredient.ingredient.name
-                if name not in shopping_list_items:
-                    shopping_list_items[name] = {
-                        'amount': ingredient.amount,
-                        'measurement_unit': (
-                            ingredient.ingredient.measurement_unit)
-                    }
-                else:
-                    shopping_list_items[name]['amount'] += ingredient.amount
-
-        shopping_list_text = ""
-        for name, item in shopping_list_items.items():
-            shopping_list_text += (
-                f"{name} ({item['measurement_unit']}) — {item['amount']}\n"
-            )
+        shopping_list_text = generate_shopping_list(user)
 
         response = HttpResponse(shopping_list_text, content_type='text/plain')
         response['Content-Disposition'] = (
