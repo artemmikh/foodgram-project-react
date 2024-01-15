@@ -395,7 +395,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         if ingredients_data:
 
             instance.ingredients.clear()
-            self.create_recipe_ingredients(instance, ingredients=ingredients_data)
+            self.create_recipe_ingredients(
+                instance,
+                ingredients=ingredients_data)
 
         else:
             raise serializers.ValidationError(
