@@ -35,11 +35,6 @@ router_v1.register(
     basename='shopping_cart',
 )
 router_v1.register('recipes', RecipeViewSet)
-# router_v1.register(
-#     r'recipes/download_shopping_cart',
-#     ShoppingCartDownloadViewSet,
-#     basename='shopping_cart',
-# )
 
 urlpatterns = [
     path(

@@ -22,7 +22,6 @@ services:
       - static:/backend_static
       - media:/app/media/
 
-
   frontend:
     container_name: frontend
     image: arttmikh/foodgram_frontend
