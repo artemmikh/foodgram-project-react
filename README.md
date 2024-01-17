@@ -1,16 +1,16 @@
 ### http://84.252.141.1/admin/
 
 **Admin:**  
-Username **artuu**  
-Password **admin**
+Username **a**  
+Password **a**
 
 Test users:
 
-Email test_user1@t.tt  
-Password caxtut-juCrac-gyfba6
+Email d@d.dd
+Password komtyp-zonqUp-3hemta
 
-Email test_user2@t.tt  
-Password nekkyw-puwwEc-2qohwu
+Email n@nn.n
+Password ruxfyv-jezPe3-tedzum
 
 # Проект «Фудграм»
 
