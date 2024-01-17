@@ -20,7 +20,7 @@ services:
     depends_on:
       - db
   frontend:
-    image: arttmikh/foodgram_frontend:latest
+    build: ./frontend/
     env_file: .env
     volumes:
       - ../frontend/:/app/result_build/
