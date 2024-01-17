@@ -45,3 +45,4 @@ urlpatterns = [
     path('', include('djoser.urls')),
     re_path('auth/', include('djoser.urls.authtoken')),
 ]
+# rjvt
