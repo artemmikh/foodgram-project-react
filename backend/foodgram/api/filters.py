@@ -19,7 +19,7 @@ class RecipeFilter(rest_framework.FilterSet):
     is_in_shopping_cart = rest_framework.BooleanFilter(
         method='filter_is_in_shopping_cart',
     )
-    is_favorited = rest_framework.NumberFilter(method='filter_is_favorited')
+    is_favorited = rest_framework.BooleanFilter(method='get_is_favorited')
 
     class Meta:
         model = Recipe
@@ -34,11 +34,11 @@ class RecipeFilter(rest_framework.FilterSet):
                 return queryset.exclude(shoppingcart__user=user)
         return queryset
 
-    def filter_is_favorited(self, queryset, name, value):
+    def get_is_favorited(self, queryset, name, value):
         user = self.request.user
         if user.is_authenticated:
             if value:
-                return queryset.filter(author__following__user=user)
+                return queryset.filter(favorited_by__user=user)
             else:
-                return queryset.exclude(author__following__user=user)
+                return queryset.exclude(favorited_by__user=user)
         return queryset

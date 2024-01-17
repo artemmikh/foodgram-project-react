@@ -36,7 +36,7 @@ from api.permissions import (
     IsAuthorOrReadOnly,
 )
 from api.filters import IngredientFilter, RecipeFilter
-from api.pagination import CustomPageNumberPaginator
+from api.pagination import FollowListPageNumberPaginator
 from api.utils import generate_shopping_list
 
 
@@ -121,12 +121,15 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 class FollowViewSet(viewsets.ModelViewSet):
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated,)
-    pagination_class = CustomPageNumberPaginator
 
     def get_author(self):
         return get_object_or_404(
             User,
             pk=self.kwargs.get('user_id'))
+
+    def list(self, request, *args, **kwargs):
+        self.pagination_class = FollowListPageNumberPaginator
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
         return Follow.objects.filter(user=self.request.user)

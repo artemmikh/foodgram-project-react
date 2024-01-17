@@ -17,9 +17,15 @@ def import_ingredients_json():
 
 def import_tags_to_bd():
     tags_data = [
-        {'name': 'Завтрак', 'color': '#FF0000', 'slug': 'slugname1'},
-        {'name': 'Обед', 'color': '#00FF00', 'slug': 'slugname2'},
-        {'name': 'Ужин', 'color': '#0000FF', 'slug': 'slugname3'}
+        {'name': 'Завтрак', 'color': '#6B8E23', 'slug': 'slugname1'},
+        {'name': 'Обед', 'color': '#87CEEB', 'slug': 'slugname2'},
+        {'name': 'Ужин', 'color': '##FF8C00', 'slug': 'slugname3'},
+        {'name': 'Здоровье', 'color': '#00FF00', 'slug': 'healthy'},
+        {'name': 'Быстрый ужин', 'color': '#FFD700', 'slug': 'quick-dinner'},
+        {'name': 'Вегетарианское', 'color': '#32CD32', 'slug': 'vegetarian'},
+        {'name': 'Экзотика', 'color': '#FF4500', 'slug': 'exotic-cuisine'},
+        {'name': 'Десерт', 'color': '#8A2BE2', 'slug': 'dessert'},
+        {'name': 'Постное', 'color': '#800080', 'slug': 'fasting'}
     ]
 
     tags = [Tag(

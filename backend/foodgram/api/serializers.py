@@ -155,10 +155,7 @@ class FollowSerializer(serializers.ModelSerializer):
         source='author.last_name',
         read_only=True)
     is_subscribed = serializers.SerializerMethodField()
-    recipes = RecipeSmallSerializer(
-        many=True,
-        read_only=True,
-        source='author.author_recipe')
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField(
         source='author.author_recipe.count',
         read_only=True
@@ -196,6 +193,23 @@ class FollowSerializer(serializers.ModelSerializer):
                 user=request.user,
                 author=obj.author).exists()
         return False
+
+    def get_recipes(self, obj):
+        author_recipes = Recipe.objects.filter(author=obj.author)
+
+        if 'recipes_limit' in self.context.get('request').GET:
+            recipes_limit = self.context.get('request').GET['recipes_limit']
+            author_recipes = author_recipes[:int(recipes_limit)]
+
+        if author_recipes:
+            serializer = RecipeSmallSerializer(
+                author_recipes,
+                context={'request': self.context.get('request')},
+                many=True
+            )
+            return serializer.data
+
+        return []
 
 
 class CustomRegisterSerializer(UserCreateSerializer):

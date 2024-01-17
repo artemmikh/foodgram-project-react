@@ -1,8 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import (
+    MinValueValidator,
+    MaxValueValidator)
 
 User = get_user_model()
+
+MIN_COOKING_TIME = 1
+MAX_COOKING_TIME = 10000
+MIN_AMOUNT = 1
+MAX_AMOUNT = 10000
 
 
 class Ingredient(models.Model):
@@ -67,7 +74,13 @@ class Recipe(models.Model):
         verbose_name='Описание рецепта'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
+        validators=[
+            MinValueValidator(
+                MIN_COOKING_TIME,
+                message='Время приготовления не может быть меньше 1.'),
+            MaxValueValidator(
+                MAX_COOKING_TIME,
+                message='Время приготовления не может быть больше 10000.')],
         verbose_name='Время приготовления в минутах'
     )
     ingredients = models.ManyToManyField(
@@ -102,7 +115,15 @@ class RecipeIngredient(models.Model):
         related_name='recipe_ingredient',
     )
     amount = models.PositiveSmallIntegerField(
-        verbose_name='Количество ингредиента'
+        verbose_name='Количество ингредиента',
+        validators=[
+            MinValueValidator(
+                MIN_AMOUNT,
+                message='Количество ингредиента не может быть меньше 1.'),
+            MaxValueValidator(
+                MAX_AMOUNT,
+                message='Количество ингредиента не может быть больше 10000.'),
+        ]
     )
 
     class Meta:
@@ -147,7 +168,8 @@ class Favorite(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
+        related_name='favorited_by'
     )
 
     class Meta:
