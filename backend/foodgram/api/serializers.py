@@ -331,6 +331,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         tags = data.get('tags')
+        ingredients = data.get('ingredients')
+        cooking_time = data.get('cooking_time')
 
         if not tags:
             raise serializers.ValidationError(
@@ -340,22 +342,19 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Тег повторяется, так нельзя.')
 
-        return data
-
-    def validate_ingredients(self, value):
-
-        if not value:
+        if not ingredients:
             raise serializers.ValidationError(
                 'Ингредиенты обязательны для заполнения')
+
         seen_ingredient_ids = set()
-        for ingredient in value:
-            ingredient_id = ingredient.get('id')
+        for ingredient in ingredients:
             amount = ingredient.get('amount')
 
             if amount is not None and amount < 1:
                 raise serializers.ValidationError(
-                    'Количество ингредиента не может быть меньше 1.')
+                    'Количество ингредиента не может быть меньше 1')
 
+            ingredient_id = ingredient.get('id')
             if ingredient_id in seen_ingredient_ids:
                 raise serializers.ValidationError(
                     'Ингредиент повторяется в рецепте.')
@@ -366,7 +365,12 @@ class RecipeSerializer(serializers.ModelSerializer):
             except Ingredient.DoesNotExist:
                 raise serializers.ValidationError(
                     f'Ингредиент с id {ingredient_id} не существует.')
-        return value
+
+            if cooking_time is not None and cooking_time < 1:
+                raise serializers.ValidationError(
+                    'Время приготовления не может быть отрицательным.')
+
+        return data
 
     def create_recipe_ingredients(self, recipe, ingredients):
         recipe_ingredients = []
@@ -385,8 +389,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-
-        self.validate_ingredients(ingredients)
 
         if 'image' not in validated_data or validated_data['image'] is None:
             raise serializers.ValidationError(

@@ -6,8 +6,6 @@ from django.core.validators import (
 
 User = get_user_model()
 
-MIN_COOKING_TIME = 1
-MAX_COOKING_TIME = 10000
 MIN_AMOUNT = 1
 MAX_AMOUNT = 10000
 
@@ -73,14 +71,7 @@ class Recipe(models.Model):
     text = models.TextField(
         verbose_name='Описание рецепта'
     )
-    cooking_time = models.PositiveSmallIntegerField(
-        validators=[
-            MinValueValidator(
-                MIN_COOKING_TIME,
-                message='Время приготовления не может быть меньше 1.'),
-            MaxValueValidator(
-                MAX_COOKING_TIME,
-                message='Время приготовления не может быть больше 10000.')],
+    cooking_time = models.IntegerField(
         verbose_name='Время приготовления в минутах'
     )
     ingredients = models.ManyToManyField(
